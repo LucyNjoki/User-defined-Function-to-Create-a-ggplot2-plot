@@ -1,0 +1,87 @@
+---
+title: <center><strong> User-defined function to create a `ggplot2` plot   </strong></center>
+author: 
+- name: <center><strong>  Lucy Njoki Njuki </strong></center>
+date: <center><strong> `r format(Sys.Date(), '%A, %d %B %Y')` </strong></center>
+output:
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+If we need to apply a specific code to multiple segments of data, we may resort to duplicating and pasting the code. However, this approach is risky as it may introduce interdependencies within the code. Moreover, overlooking the need to modify the replicated code could lead to errors that are difficult to identify promptly.
+
+As a result, I will demonstrate in this R markdown how we can generate a `ggplot2` plot using a user-defined function. To illustrate this concept, I will use the penguins dataset from the `palmerpenguins` R package.
+
+Let's start by loading the R packages we will use:
+
+```{r load_r_packages}
+suppressPackageStartupMessages({
+  library(ggplot2) # Create Elegant Data Visualisations Using the Grammar of Graphics, CRAN v3.3.6
+  library(dplyr) # A Grammar of Data Manipulation, CRAN v1.0.9
+  library(palmerpenguins) # Palmer Archipelago (Antarctica) Penguin Data, CRAN v0.1.1
+  library(ggthemes) # Extra Themes, Scales and Geoms for 'ggplot2', CRAN v4.2.4
+  library(ggrepel) # Automatically Position Non-Overlapping Text Labels with 'ggplot2', CRAN v0.9.1
+})
+```
+
+
+Next, we will import the `penguins` dataframe.
+
+```{r data}
+# load penguins data
+penguins_df = penguins
+```
+
+Now, let's generate a summary of penguin species counts across years.
+
+```{r yearly_counts}
+(yearly_counts_per_species = penguins_df %>% 
+  group_by(year, species) %>% 
+  summarise(count = n()))
+```
+
+To create, the ggplot2 plot, let's create a function to do that. 
+
+```{r plot_function}
+plot_function = function(df, x, y, z){
+  ggplot(df) +
+    geom_bar(aes(x = {{x}}, y = {{y}}, fill = {{z}}), stat= "identity",
+             position = position_dodge(0.5)) +
+    geom_label_repel(aes(label = {{y}}, x = {{x}}, y = {{y}})) +
+    theme_calc() +
+    scale_color_calc()}
+
+# z is a variable that can be used for grouping. Hence, it can be removed if no grouping is needed.
+```
+
+Then, we generate the plot.
+
+```{r generate_plot}
+(p1 <- plot_function(yearly_counts_per_species, year, count, species))
+```
+
+Subsequently, we aim to enhance the plot's customization by incorporating additional elements into the aforementioned function.
+
+```{r customise_generated_plot}
+p1 +
+  labs(x = "Years", y = "Count",
+       title = "Count of species of pengiuns over the years") +
+  viridis::scale_fill_viridis(discrete = TRUE, alpha = 0.7) +
+  theme(plot.title= element_text(size = 12, hjust = 0.5, face="bold"),
+        axis.title = element_text(size = 10, hjust = 0.5))
+```
+
+Finally, let's save the plot.
+
+```{r save_plot}
+ggsave("p1.PNG")
+```
+
+END! `r emojifont::emoji('smile_cat')`
