@@ -1,4 +1,4 @@
-# User-defined-Function-to-Create-a-ggplot2-plot
+# User- defined Function to Create a `ggplot2` plot
 
 ## 25.04.2023
 
